@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDOM - Tez İzleme Sunumu</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .section-header {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            margin: 2rem;
+            gap: 2rem;
+        }
+
+        .menu {
+            width: 250px;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .menu-item {
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .menu-item.active {
+            background: #1a2a6c;
+            color: white;
+        }
+
+        .content {
+            flex: 1;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .progress-container {
+            background: #f0f0f0;
+            height: 4px;
+            border-radius: 2px;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #1a2a6c;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #1a2a6c;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .note-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        .note-input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .notes-list {
+            margin-top: 1rem;
+        }
+
+        .note-item {
+            background: #f9f9f9;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+        }
+
+        .export-button {
+            margin-top: 1rem;
+            background: #b21f1f;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted #666;
+            cursor: help;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 5px;
+            width: 200px;
+            font-size: 0.9rem;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .visible {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        #contentBody {
+            line-height: 1.6;
+        }
+
+        #contentBody h3 {
+            margin-bottom: 1rem;
+            color: #1a2a6c;
+        }
+
+        #contentBody p {
+            margin-bottom: 1rem;
+        }
+
+        #contentBody ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #contentBody li {
+            margin-bottom: 0.5rem;
+        }
+
+        .home-button {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .home-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Collapsible Button Styles */
+        .collapsible {
+            background-color: #1a2a6c;
+            color: white;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.4s;
+        }
+
+        .collapsible:hover {
+            background-color: #2a3a7c;
+        }
+
+        .collapsible:after {
+            content: '\002B';
+            color: white;
+            font-weight: bold;
+            float: right;
+            margin-left: 5px;
+            font-size: 20px;
+        }
+
+        .active:after {
+            content: "\2212";
+        }
+
+        .guide-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #f9f9f9;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .guide-content-inner {
+            padding: 20px;
+        }
+
+        /* Ana başlık */
+        h3 {
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            color: #1a2a6c;
+        }
+
+        /* Alt başlıklar */
+        h4 {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem 0;
+            color: #2a3a7c;
+        }
+
+        /* Hafta başlıkları */
+        h5 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem 0;
+            color: #1a2a6c;
+            border-bottom: 2px solid rgba(26, 42, 108, 0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Normal metin */
+        p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        /* Liste öğeleri */
+        li {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin: 0.8rem 0;
+            padding-left: 1.5rem;
+        }
+
+        /* Açılır kapanır düğme metni */
+        .collapsible {
+            font-size: 1.4rem;
+            padding: 1.2rem;
+        }
+
+        /* İçerik alanları için boşluklar */
+        .guide-content-inner, .program-content {
+            padding: 2rem;
+        }
+
+        /* Liste maddeleri arası boşluk */
+        ul {
+            margin: 1rem 0;
+        }
+
+        /* Önemli metinler için kalınlık */
+        strong {
+            font-weight: 600;
+        }
+
+        /* Genel metin rengi ve kontrast */
+        body {
+            color: #333;
+        }
+
+        /* İçerik bölümleri arası boşluk */
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        /* Mobil cihazlar için responsive tasarım */
+        @media (max-width: 768px) {
+            h3 { font-size: 1.8rem; }
+            h4 { font-size: 1.5rem; }
+            h5 { font-size: 1.3rem; }
+            p, li { font-size: 1.1rem; }
+            .collapsible { font-size: 1.2rem; }
+        }
+
+        /* Gallery Styles */
+        .gallery-section {
+            margin: 2rem 0;
+        }
+
+        .interface-gallery, .video-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .gallery-item, .video-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover, .video-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .demo-video {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .image-caption, .video-caption {
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .gallery-note {
+            font-style: italic;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .interface-gallery, .video-gallery {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">EDOM Tez İzleme Sunumu</div>
+        <div class="controls">
+            <button id="playButton"><i class="fas fa-play"></i></button>
+            <button id="muteButton"><i class="fas fa-volume-up"></i></button>
+            <a href="index.html" class="home-button" style="color: white; text-decoration: none;">
+                <i class="fas fa-home"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="menu" id="menuButtons"></div>
+        <div class="content">
+            <div class="content-header">
+                <h2 id="contentTitle"></h2>
+                <div class="progress-text" id="progressText"></div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="contentBody"></div>
+            <div class="navigation">
+                <button id="prevButton"><i class="fas fa-arrow-left"></i> Önceki</button>
+                <button id="nextButton">Sonraki <i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div class="note-section">
+                <h3>Notlar</h3>
+                <textarea id="noteInput" class="note-input" placeholder="Not eklemek için buraya yazın..."></textarea>
+                <button onclick="addNote()">Not Ekle</button>
+                <div id="notesList" class="notes-list"></div>
+                <button onclick="exportToWord()" class="export-button">
+                    <i class="fas fa-file-word"></i> Word Olarak İndir
+                </button>
+            </div>
+                      
+
+    <script>
+        let activeSection = 0;
+        let isPlaying = false;
+        let isMuted = false;
+        let notes = [];
+
+        const sections = [
+            {
+                title: "Araştırmanın Kimliği",
+                icon: "fa-id-card",
+                content: `
+                    <h3>Araştırmanın Kimliği</h3>
+                    <div class="research-details">
+                        <h4>Tez Başlığı</h4>
+                        <p>Okuma Güçlüğü Yaşayan Öğrencilere Yönelik Web Tabanlı Ebeveyn Denetimli Okuma Müdahale Programının (EDOM) Etkisinin Değerlendirilmesi</p>
+                        
+                        <h4>Araştırmacı</h4>
+                        <ul>
+                            <li>Ahmet Mükerrem ÜNAL</li>
+                            <li>Eğitim Fakültesi</li>
+                            <li>Sınıf Eğitimi Doktora Programı</li>
+                        </ul>
+
+                        <h4>Danışman</h4>
+                        <ul>
+                            <li>Prof. Dr. Mızrap BULUNUZ</li>
+                            <li>Bursa Uludağ Üniversitesi</li>
+                        </ul>
+
+                        <h4>Çalışmanın Niteliği</h4>
+                        <p>Doktora Tezi</p>
+                    </div>
+                `
+            },
+            {
+                title: "Araştırmanın Kapsamı",
+                icon: "fa-search",
+                content: `
+                    <h3>Araştırmanın Kapsamı</h3>
+                    <div class="scope-details">
+                        <h4>Amaç</h4>
+                        <p>Bu araştırma, okuma güçlüğü yaşayan öğrenciler için geliştirilen Web Tabanlı Ebeveyn Denetimli Okuma Müdahale Programının (EDOM) etkililiğini değerlendirmeyi amaçlamaktadır.</p>
+
+                        <h4>Önem</h4>
+                        <ul>
+                            <li>Ebeveyn katılımını merkeze alan web destekli okuma müdahale programı</li>
+                            <li>Literatürde sınırlı sayıda bulunan bir araştırma alanı</li>
+                            <li>Bütüncül bir müdahale modeli</li>
+                        </ul>
+
+                        <h4>Veri Toplama Dönemi</h4>
+                        <ul>
+                            <li>Başlangıç: 01.06.2025</li>
+                            <li>Bitiş: 01.10.2025</li>
+                        </ul>
+
+                        <h4>Veri Toplama Ortamı</h4>
+                        <p>Veriler, gönüllü ebeveynler aracılığıyla ev ortamında ve web destekli olarak toplanacaktır. Öğrenciler, özel öğrenme güçlüğü tanısı almış bireyler arasından gönüllülük esasına göre belirlenecektir.</p>
+                    </div>
+                `
+            },
+            {
+                title: "Metodoloji",
+                icon: "fa-flask",
+                content: `
+                    <h3>Metodoloji</h3>
+                    <div class="methodology-details">
+                        <h4>Araştırma Deseni</h4>
+                        <ul>
+                            <li>Yarı deneysel desen</li>
+                            <li>Eşdeğer grup karşılaştırmalı desen</li>
+                            <li>Ön test - son test uygulaması</li>
+                        </ul>
+
+                        <h4>Örneklem</h4>
+                        <ul>
+                            <li>Deney ve kontrol grupları</li>
+                            <li>Eşleştirme yöntemi ile grup oluşturma</li>
+                            <li>Sınıf düzeyi ve ön test puanlarına göre eşleştirme</li>
+                        </ul>
+
+                        <h4>Katılımcı Kriterleri</h4>
+                        <ul>
+                            <li>Özel öğrenme güçlüğü tanısı almış olma</li>
+                            <li>1-4. sınıf düzeyinde olma</li>
+                            <li>Ana dilinin Türkçe olması</li>
+                            <li>Başka bir özel gereksinimin bulunmaması</li>
+                            <li>RAM veritabanında kayıtlı olma ve ebeveyn izni</li>
+                            <li>Ebeveynin EDOM eğitimini tamamlamış olması</li>
+                            <li>Evde uygulama için uygun ortam ve zaman</li>
+                        </ul>
+
+                        <h4>Örneklem Yapısı</h4>
+                        <ul>
+                            <li>Ulaşılabilirlik ve gönüllülük esaslı seçim</li>
+                            <li>Sınırlı ama kontrollü bir uygulama grubu (5+5 öğrenci)</li>
+                            <li>Haftalık 4 saatlik birebir ebeveyn destekli uygulama</li>
+                            <li>Yüksek takip ve nitelikli uygulama gerekliliği</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Ölçme Araçları",
+                icon: "fa-tools",
+                content: `
+                    <h3>Ölçme Araçları</h3>
+                    <div class="tools-details">
+                        <h4>Temel Ölçme Araçları</h4>
+                        <ul>
+                            <li><strong>SOBAT-II:</strong> Sesli okuma ve okuduğunu anlama becerilerini değerlendirme</li>
+                            <li><strong>KEOT:</strong> Kelime okuma bilgisi testi</li>
+                            <li><strong>HİT:</strong> Hızlı isimlendirme testi</li>
+                            <li><strong>Okuma Prozodisi Rubriği:</strong> Vurgu, tonlama, pürüzsüzlük ve hız değerlendirmesi</li>
+                        </ul>
+
+                        <h4>Destekleyici Araçlar</h4>
+                        <ul>
+                            <li><strong>Çalışma Belleği Testi:</strong> Görsel ve işitsel bellek değerlendirmesi</li>
+                            <li><strong>Bender-Gestalt Testi:</strong> Görsel motor algı değerlendirmesi</li>
+                        </ul>
+
+                        <h4>Ebeveyn Değerlendirme Araçları</h4>
+                        <ul>
+                            <li>EDOM Ebeveyn Değerlendirme Aracı</li>
+                            <li>Yarı Yapılandırılmış Görüşme Formları</li>
+                            <li>Uygulama Gözlem Formları</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Uygulama Süreci",
+                icon: "fa-tasks",
+                content: `
+                    <h3>Uygulama Süreci</h3>
+                    <div class="implementation-details">
+                        <h4>Pilot Çalışma</h4>
+                        <ul>
+                            <li>Programın uygulanabilirliğinin test edilmesi</li>
+                            <li>Ebeveyn eğitiminin değerlendirilmesi</li>
+                            <li>Ölçme araçlarının etkinliğinin kontrolü</li>
+                        </ul>
+
+                        <h4>Ana Uygulama</h4>
+                        <ul>
+                            <li>Deney grubu: EDOM programı uygulaması</li>
+                            <li>Kontrol grubu: Normal süreç</li>
+                            <li>Telafi uygulaması: Araştırma sonrası kontrol grubuna program sunumu</li>
+                        </ul>
+
+                        <h4>Ebeveyn Eğitimi</h4>
+                        <ul>
+                            <li>15 saatlik eğitici eğitimi</li>
+                            <li>Program uygulama becerileri</li>
+                            <li>Teknoloji kullanım yeterlikleri</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Takvim Değişikliği Gerekçesi",
+                icon: "fa-calendar-alt",
+                content: `
+                    <h3>Takvimi Değişikliği Gerekçesi</h3>
+                    <ul>
+                        <li><strong>Başlangıçtaki Planlanan Uygulama Dönemi:</strong> Haziran 2025 – Ağustos 2025 (yaz dönemi)</li>
+                        <li><strong>Güncellenen Uygulama Dönemi:</strong> Eylül 2025 – Kasım 2025 (okul dönemi)</li>
+                    </ul>
+                    <p>Uygulama takvimi değişikliğinin temel gerekçeleri aşağıda özetlenmiştir:</p>
+                    <ul>
+                        <li><strong>İlk Plan:</strong> Tek denekli araştırma yöntemiyle, dış değişkenlerin etkisini azaltmak için uygulamanın yaz tatilinde yapılması öngörülmüştü. Bu dönemde öğrencilerin başka bir eğitim ortamına devam etme olasılığı düşüktü.</li>
+                        <li><strong>Yöntem Değişikliği:</strong> Araştırma deseni yarı deneysel - eşdeğer grup karşılaştırmalı desene dönüştürüldü. Kontrol grubunun varlığı, dış etkenlerin araştırmanın iç geçerliğini olumsuz etkileme riskini minimize etti.</li>
+                        <li><strong>Yaz Dönemi Zorlukları:</strong> Tatil sürecinde ailelerin seyahat, dinlenme gibi nedenlerle programa bağlılığının azalabileceği ve düzenli katılımın güç olabileceği öngörüldü.</li>
+                        <li><strong>Okul Dönemi Avantajı:</strong> Okul döneminde çocukların günlük rutinlere uyum sağlaması ve bilişsel açıdan daha hazır olmaları beklenmektedir.</li>
+                    </ul>
+                    <p><strong>Sonuç olarak:</strong> Uygulamanın Eylül – Kasım 2025 tarihleri arasında, okul döneminde ve ev ortamında ebeveyn eşliğinde yürütülmesi; programın güvenilirliği ve araştırmanın metodolojik tutarlılığı açısından en uygun seçenek olarak belirlenmiştir.</p>
+                `
+            },
+            {
+                title: "Beklenen Çıktılar",
+                icon: "fa-chart-line",
+                content: `
+                    <h3>Beklenen Çıktılar</h3>
+                    <div class="outcomes-details">
+                        <h4>Akademik Katkı</h4>
+                        <ul>
+                            <li>Web tabanlı müdahale programı literatürüne katkı</li>
+                            <li>Ebeveyn destekli okuma müdahalesi modeli</li>
+                            <li>Yenilikçi eğitim materyalleri</li>
+                        </ul>
+
+                        <h4>Pratik Katkı</h4>
+                        <ul>
+                            <li>Ebeveynler için sistematik müdahale programı</li>
+                            <li>Öğrenciler için bireyselleştirilmiş destek</li>
+                            <li>Uzaktan erişilebilir eğitim materyalleri</li>
+                        </ul>
+
+                        <h4>Yenilikçi Yönler</h4>
+                        <ul>
+                            <li>Web tabanlı uygulama platformu</li>
+                            <li>Ebeveyn-çocuk etkileşimini destekleme</li>
+                            <li>Teknoloji destekli okuma müdahalesi</li>
+                            <li>Ölçülebilir sonuçlar ve veri analizi</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Yapılan Çalışmalar",
+                icon: "fa-check-circle",
+                content: `
+                    <h3>Yapılan Çalışmalar</h3>
+                    <div class="completed-work">
+                        <h4>Literatür Taraması</h4>
+                        <ul>
+                            <li>Okuma güçlüğü ve disleksi alanında ulusal ve uluslararası kaynaklar incelendi</li>
+                            <li>Web tabanlı müdahale programları araştırıldı</li>
+                            <li>Ebeveyn destekli okuma programları analiz edildi</li>
+                        </ul>
+
+                        <h4>EDOM Programı Geliştirme</h4>
+                        <ul>
+                            <li>Program içeriği ve modüller oluşturuldu</li>
+                            <li>Web platformu tasarlandı ve geliştirildi</li>
+                            <li>Ebeveyn eğitim materyalleri hazırlandı</li>
+                            <li>Ölçme araçları belirlendi ve dijital ortama aktarıldı</li>
+                        </ul>
+
+                        <h4>Pilot Uygulama Hazırlıkları</h4>
+                        <ul>
+                            <li>Etik kurul başvurusu tamamlandı</li>
+                            <li>Veri toplama araçları dijital ortama aktarıldı</li>
+                            <li>Ebeveyn bilgilendirme ve onam formları hazırlandı</li>
+                            <li>Pilot çalışma için katılımcı kriterleri belirlendi</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Yapılacak Çalışmalar",
+                icon: "fa-clipboard-list",
+                content: `
+                    <h3>Yapılacak Çalışmalar</h3>
+                    <div class="future-work">
+                        <h4>Pilot Uygulama (Haziran 2025)</h4>
+                        <ul>
+                            <li>İki öğrenci ve ebeveynleriyle pilot çalışmanın yürütülmesi</li>
+                            <li>Program kullanılabilirliğinin değerlendirilmesi</li>
+                            <li>Ölçme araçlarının etkinliğinin test edilmesi</li>
+                            <li>Ebeveyn geri bildirimlerinin alınması</li>
+                        </ul>
+
+                        <h4>Ana Uygulama (Temmuz-Eylül 2025)</h4>
+                        <ul>
+                            <li>Deney ve kontrol gruplarının oluşturulması</li>
+                            <li>Ön testlerin uygulanması</li>
+                            <li>EDOM programının 12 haftalık uygulaması</li>
+                            <li>Süreç değerlendirmesi ve veri toplama</li>
+                            <li>Son testlerin uygulanması</li>
+                        </ul>
+
+                        <h4>Veri Analizi ve Raporlama (Eylül-Ekim 2025)</h4>
+                        <ul>
+                            <li>Nicel verilerin istatistiksel analizi</li>
+                            <li>Nitel verilerin içerik analizi</li>
+                            <li>Bulguların yorumlanması</li>
+                            <li>Tez raporunun yazılması</li>
+                            <li>Kontrol grubuna telafi uygulamasının sunulması</li>
+                        </ul>
+
+                        <h4>Yaygınlaştırma</h4>
+                        <ul>
+                            <li>Araştırma sonuçlarının akademik yayına dönüştürülmesi</li>
+                            <li>Ulusal ve uluslararası kongrelerde sunulması</li>
+                            <li>EDOM programının yaygınlaştırılması için öneriler geliştirilmesi</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Yöntem Değişikliği",
+                icon: "fa-exchange-alt",
+                content: `
+                    <h3>Yöntem Değişikliği</h3>
+                    <div class="method-change-details">
+                        <h4>Önceki Yöntem</h4>
+                        <ul>
+                            <li>Tek denekli araştırma deseni</li>
+                            <li>Daha küçük örneklem grubu</li>
+                            <li>Bireysel ilerleme takibi</li>
+                            <li>Tekrarlı ölçümler</li>
+                        </ul>
+
+                        <h4>Değişiklik Nedenleri</h4>
+                        <ul>
+                            <li>Programın modüler aralığı, veri takibi ve bireysel ölçüt belirleme karmaşıklığı</li>
+                            <li>Çok boyutlu beceri alanlarını (fonoloji, bellek, sözcüksel erişim vb.) içeren bir uygulamada grup karşılaştırmalarının etkiyi daha net görünür kılması</li>
+                            <li>Programın etkililiğini daha kapsamlı değerlendirme ihtiyacı</li>
+                            <li>Grup karşılaştırmalarına dayalı istatistiksel analiz yapabilme</li>
+                            <li>Daha genellenebilir sonuçlar elde etme hedefi</li>
+                            <li>Kontrol grubu ile karşılaştırma yaparak etki büyüklüğünü belirleme</li>
+                        </ul>
+
+                        <h4>Yeni Yöntem: Karşılaştırmalı Deneysel Desen</h4>
+                        <ul>
+                            <li>Deney ve kontrol gruplu yarı deneysel desen</li>
+                            <li>Eşdeğer grup karşılaştırmalı yaklaşım</li>
+                            <li>Sınıf düzeyi ve ön test puanlarına göre eşleştirme</li>
+                            <li>Daha büyük örneklem grubu (5+5 öğrenci)</li>
+                        </ul>
+
+                        <h4>Beklenen Metodolojik Katkılar</h4>
+                        <ul>
+                            <li>Daha güçlü deneysel kontrol</li>
+                            <li>Gruplar arası karşılaştırma imkanı</li>
+                            <li>İstatistiksel anlamlılık testleri yapabilme</li>
+                            <li>Programın etkililiğine dair daha güvenilir kanıtlar</li>
+                            <li>Araştırma sonuçlarının genellenebilirliğinde artış</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "EDOM Veli Kılavuzu",
+                icon: "fa-book-reader",
+                content: `
+                    <h3>EDOM Veli Uygulama Kılavuzu</h3>
+                    <button type="button" class="collapsible">
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-book-reader" style="margin-right: 10px;"></i>
+                            EDOM Veli Uygulama Kılavuzu Giriş (TASLAK)
+                        </div>
+                    </button>
+                    <div class="guide-content">
+                        <div class="guide-content-inner">
+                            <div class="guide-details">
+                                <h4>Giriş: Programın Amacı ve Veli Rolü</h4>
+                                <p>Sayın Veli,</p>
+                                <p>Bu kılavuz okuma güçlüğü (disleksi) yaşayan çocuğunuzun okuma becerilerini desteklemek amacıyla geliştirilen EDOM (Ebeveyn Denetimli Okuma Müdahale Programı) uygulaması için size rehberlik etmek için hazırlanmıştır.</p>
+                                <p>EDOM, haftalık modüller halinde bilgisayar üzerinden uygulanan, eğitsel oyunlar ve etkinlikleri içeriden oluşan web tabanlı bir programdır. Bu süreçte çocuğunuzun yanında bulunmanız, yönlendirme yapmanız ve ancak gerektiğinde teknik destek ve basit hatırlatmalar sağlamanızdır.</p>
+                                <p>Program boyunca çocuğunuzun gelişimini gözlemlemeniz için küçük notlar almanız veya takip formu doldurmanız önerilir.</p>
+
+                                <h4>Her Hafta İçin Şablon Yapısı</h4>
+                                <ul>
+                                    <li><strong>Alt Hedef:</strong> O haftanın öğrenme hedefleri</li>
+                                    <li><strong>Etkinlik Türleri:</strong> Yapılacak aktiviteler</li>
+                                    <li><strong>Günlük Uygulama Süresi:</strong> Yaklaşık 45 dakika – 1 saat</li>
+                                    <li><strong>Uygulama Ortamı:</strong> Sessiz bir ortamda, bilgisayar üzerinden</li>
+                                    <li><strong>Veli Görevi:</strong> Uygulama sırasında moral ve destek, teknik yardım, gereksiz müdahaleden kaçınma</li>
+                                    <li><strong>Gözlem Notu Alanı:</strong> Veli tarafından isteğe bağlı olarak doldurulabilir</li>
+                                </ul>
+
+                                <h4>Genel Uygulama İlkeleri</h4>
+                                <ul>
+                                    <li>Günlük uygulama süresi: 45 dakika – 1 saat</li>
+                                    <li>Uygulama ortamı: Sessiz, dikkat dağıtıcılardan uzak bir ortam</li>
+                                    <li>Temel araç: Bilgisayar ve internet bağlantısı</li>
+                                    <li>Veli rolü: Destekleyici ve gözlemci</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="program-content" style="margin-top: 20px;">
+                        <h4>Haftalık Program İçeriği</h4>
+                        <div class="weekly-content">
+                            <h5>1. Hafta - Programa Giriş ve Temel Beceriler</h5>
+                            <ul>
+                                <li>Alt Hedef: Program tanıtımı ve temel okuma becerilerinin değerlendirilmesi</li>
+                                <li>Etkinlik Türleri: Oryantasyon, değerlendirme testleri, basit okuma alıştırmaları</li>
+                            </ul>
+
+                            <h5>2. Hafta - Fonolojik Farkındalık</h5>
+                            <ul>
+                                <li>Alt Hedef: Ses-harf ilişkisi ve fonolojik farkındalık geliştirme</li>
+                                <li>Etkinlik Türleri: Ses oyunları, hece çalışmaları, ses birleştirme aktiviteleri</li>
+                            </ul>
+
+                            <h5>3. Hafta - Görsel İşleme</h5>
+                            <ul>
+                                <li>Alt Hedef: Görsel algı ve işleme becerilerinin geliştirilmesi</li>
+                                <li>Etkinlik Türleri: Görsel takip, şekil-zemin çalışmaları</li>
+                            </ul>
+
+                            <h5>4. Hafta - Çalışma Belleği</h5>
+                            <ul>
+                                <li>Alt Hedef: Çalışma belleği kapasitesinin artırılması</li>
+                                <li>Etkinlik Türleri: Bellek oyunları, sıralama aktiviteleri</li>
+                            </ul>
+
+                            <h5>5. Hafta - Hızlı İsimlendirme</h5>
+                            <ul>
+                                <li>Alt Hedef: Hızlı isimlendirme becerilerinin geliştirilmesi</li>
+                                <li>Etkinlik Türleri: Hızlı nesne/sembol tanıma oyunları</li>
+                            </ul>
+
+                            <h5>6. Hafta - Kelime Tanıma</h5>
+                            <ul>
+                                <li>Alt Hedef: Kelime tanıma becerilerinin geliştirilmesi</li>
+                                <li>Etkinlik Türleri: Görsel kelime kartları, hızlı kelime tanıma oyunları</li>
+                            </ul>
+
+                            <h5>7. Hafta - Akıcı Okuma I</h5>
+                            <ul>
+                                <li>Alt Hedef: Okuma hızı ve doğruluğunun artırılması</li>
+                                <li>Etkinlik Türleri: Tekrarlı okumalar, eşli okuma çalışmaları</li>
+                            </ul>
+
+                            <h5>8. Hafta - Akıcı Okuma II</h5>
+                            <ul>
+                                <li>Alt Hedef: Prozodik okuma becerilerinin geliştirilmesi</li>
+                                <li>Etkinlik Türleri: Vurgu ve tonlama çalışmaları, ritim aktiviteleri</li>
+                            </ul>
+
+                            <h5>9. Hafta - Anlama Stratejileri I</h5>
+                            <ul>
+                                <li>Alt Hedef: Temel anlama stratejilerinin öğretimi</li>
+                                <li>Etkinlik Türleri: Tahmin etme, soru sorma, özetleme çalışmaları</li>
+                            </ul>
+
+                            <h5>10. Hafta - Anlama Stratejileri II</h5>
+                            <ul>
+                                <li>Alt Hedef: İleri düzey anlama stratejilerinin geliştirilmesi</li>
+                                <li>Etkinlik Türleri: Çıkarım yapma, ana fikir bulma aktiviteleri</li>
+                            </ul>
+
+                            <h5>11. Hafta - Bütünleştirme I</h5>
+                            <ul>
+                                <li>Alt Hedef: Öğrenilen becerilerin bütünleştirilmesi</li>
+                                <li>Etkinlik Türleri: Karma okuma etkinlikleri, uygulama projeleri</li>
+                            </ul>
+
+                            <h5>12. Hafta - Bütünleştirme II ve Değerlendirme</h5>
+                            <ul>
+                                <li>Alt Hedef: Son değerlendirme ve gelişim analizi</li>
+                                <li>Etkinlik Türleri: Değerlendirme testleri, genel tekrar</li>
+                            </ul>
+                        </div>
+
+                        <h4>Veli Sorumlulukları</h4>
+                        <ul>
+                            <li>Düzenli uygulama takibi</li>
+                            <li>Destekleyici ve motive edici yaklaşım</li>
+                            <li>Gözlem notlarının tutulması</li>
+                            <li>Teknik sorunların raporlanması</li>
+                            <li>Haftalık ilerleme raporlarının doldurulması</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Program Galerisi",
+                icon: "fa-images",
+                content: `
+                    <h3>EDOM Program Galerisi</h3>
+                    <div class="gallery-section">
+                        <h4>Program Etkinlik Görüntüleri</h4>
+                        <div class="interface-gallery">
+                            <div class="gallery-item">
+                                <img src="TİK görsel/fotoğraf 1.png" alt="EDOM Fotoğraf 1" class="gallery-image">
+                                <p class="image-caption">fotoğraf 1</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="TİK görsel/fotoğraf 2.png" alt="EDOM Fotoğraf 2" class="gallery-image">
+                                <p class="image-caption">fotoğraf 2</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="TİK görsel/fotoğraf 3.png" alt="EDOM Fotoğraf 3" class="gallery-image">
+                                <p class="image-caption">fotoğraf 3</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="TİK görsel/fotoğraf 4.png" alt="EDOM Fotoğraf 4" class="gallery-image">
+                                <p class="image-caption">fotoğraf 4</p>
+                            </div>
+                            <div class="gallery-item">
+                                <img src="TİK görsel/fotoğraf 5.png" alt="EDOM Fotoğraf 5" class="gallery-image">
+                                <p class="image-caption">fotoğraf 5</p>
+                            </div>
+                        </div>
+
+                        <h4>Uygulama Videoları</h4>
+                        <div class="video-gallery">
+                            <div class="video-item">
+                                <video controls class="demo-video">
+                                    <source src="TİK görsel/video 1.mp4" type="video/mp4">
+                                    Tarayıcınız video oynatmayı desteklemiyor.
+                                </video>
+                                <p class="video-caption">video 1</p>
+                            </div>
+                        </div>
+
+                        <div class="gallery-note">
+                            <p><i class="fas fa-info-circle"></i> Bu görseller ve video, EDOM programının etkinliklerini ve uygulama sürecini göstermektedir.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Ekler",
+                icon: "fa-file-word",
+                content: `
+                    <h3>Ekler</h3>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li>
+                            <a href="ekler/Ek1.docx" download>
+                                <i class="fas fa-file-word"></i> Ek 1 (İndir)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="ekler/Ek2.docx" download>
+                                <i class="fas fa-file-word"></i> Ek 2 (İndir)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="ekler/Ek3.docx" download>
+                                <i class="fas fa-file-word"></i> Ek 3 (İndir)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="ekler/Ek4.docx" download>
+                                <i class="fas fa-file-word"></i> Ek 4 (İndir)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="ekler/Ek5.docx" download>
+                                <i class="fas fa-file-word"></i> Ek 5 (İndir)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="ekler/Ek6.docx" download>
+                                <i class="fas fa-file-word"></i> Ek 6 (İndir)
+                            </a>
+                        </li>
+                    </ul>
+                `
+            },
+            
+        ];
+
+        function addNote() {
+            const noteText = document.getElementById('noteInput').value;
+            if (!noteText.trim()) return;
+
+            notes.push({
+                text: noteText,
+                date: new Date().toLocaleString(),
+                section: sections[activeSection].title
+            });
+
+            document.getElementById('noteInput').value = '';
+            updateNotes();
+        }
+
+        function updateNotes() {
+            const notesList = document.getElementById('notesList');
+            notesList.innerHTML = notes.map(note => `
+                <div class="note-item">
+                    <p>${note.text}</p>
+                    <small>${note.section} - ${note.date}</small>
+                </div>
+            `).join('');
+        }
+
+        function exportToWord() {
+            let content = `EDOM Tez İzleme Sunumu Notları\n\n`;
+            
+            // Başlık ve tarih
+            content += `Tarih: ${new Date().toLocaleDateString()}\n\n`;
+            
+            // Bölümlere göre notları grupla
+            const groupedNotes = {};
+            notes.forEach(note => {
+                if (!groupedNotes[note.section]) {
+                    groupedNotes[note.section] = [];
+                }
+                groupedNotes[note.section].push(note);
+            });
+
+            // Her bölüm için notları ekle
+            Object.keys(groupedNotes).forEach(section => {
+                content += `\n${section}\n`;
+                content += '='.repeat(section.length) + '\n\n';
+                
+                groupedNotes[section].forEach(note => {
+                    content += `• ${note.text}\n`;
+                    content += `  (${note.date})\n\n`;
+                });
+            });
+
+            const blob = new Blob([content], { type: 'application/msword' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'EDOM_Sunum_Notlari.doc';
+            link.click();
+        }
+
+        function updateContent() {
+            document.getElementById('contentTitle').innerHTML = `
+                <span class="section-icon mr-4">
+                    <i class="fas ${sections[activeSection].icon}"></i>
+                </span>
+                <span>${sections[activeSection].title}</span>
+            `;
+            document.getElementById('contentBody').innerHTML = sections[activeSection].content;
+            document.getElementById('progressBar').style.width = `${((activeSection + 1) / sections.length) * 100}%`;
+            document.getElementById('progressText').textContent = `${activeSection + 1} / ${sections.length}`;
+
+            const menuButtons = document.getElementById('menuButtons');
+            menuButtons.innerHTML = sections.map((section, index) => `
+                <div class="menu-item ${activeSection === index ? 'active' : ''}" onclick="setActiveSection(${index})">
+                    <div class="section-icon">
+                        <i class="fas ${section.icon}"></i>
+                    </div>
+                    <span>${section.title}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('prevButton').disabled = activeSection === 0;
+            document.getElementById('nextButton').disabled = activeSection === sections.length - 1;
+
+            if (isPlaying) {
+                stopSpeaking();
+                speakText(sections[activeSection].title + ". " + 
+                    sections[activeSection].content.replace(/<[^>]*>/g, ' '));
+            }
+
+            // Collapsible fonksiyonunu ekle
+            document.addEventListener('DOMContentLoaded', function() {
+                function setupCollapsible() {
+                    var coll = document.getElementsByClassName("collapsible");
+                    for (var i = 0; i < coll.length; i++) {
+                        coll[i].addEventListener("click", function() {
+                            this.classList.toggle("active");
+                            var content = this.nextElementSibling;
+                            if (content.style.maxHeight) {
+                                content.style.maxHeight = null;
+                            } else {
+                                content.style.maxHeight = content.scrollHeight + "px";
+                            }
+                        });
+                    }
+                }
+
+                // Her içerik güncellemesinde collapsible'ları yeniden ayarla
+                const originalUpdateContent = updateContent;
+                updateContent = function() {
+                    originalUpdateContent();
+                    setupCollapsible();
+                };
+
+                // Sayfa yüklendiğinde collapsible'ları ayarla
+                setupCollapsible();
+            });
+        }
+
+        function setActiveSection(index) {
+            activeSection = index;
+            updateContent();
+        }
+
+        document.getElementById('prevButton').addEventListener('click', () => {
+            if (activeSection > 0) setActiveSection(activeSection - 1);
+        });
+
+        document.getElementById('nextButton').addEventListener('click', () => {
+            if (activeSection < sections.length - 1) setActiveSection(activeSection + 1);
+        });
+
+        document.getElementById('playButton').addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            const button = document.getElementById('playButton');
+            
+            if (isPlaying) {
+                button.innerHTML = '<i class="fas fa-pause"></i>';
+                speakText(sections[activeSection].title + ". " + 
+                    sections[activeSection].content.replace(/<[^>]*>/g, ' '));
+            } else {
+                button.innerHTML = '<i class="fas fa-play"></i>';
+                stopSpeaking();
+            }
+        });
+
+        document.getElementById('muteButton').addEventListener('click', () => {
+            isMuted = !isMuted;
+            const button = document.getElementById('muteButton');
+            
+            if (isMuted) {
+                button.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                stopSpeaking();
+            } else {
+                button.innerHTML = '<i class="fas fa-volume-up"></i>';
+                if (isPlaying) {
+                    speakText(sections[activeSection].title + ". " + 
+                        sections[activeSection].content.replace(/<[^>]*>/g, ' '));
+                }
+            }
+        });
+
+        function speakText(text) {
+            if ('speechSynthesis' in window && !isMuted) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'tr-TR';
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function stopSpeaking() {
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+            }
+        }
+
+        // Sayfa yüklendiğinde içeriği güncelle
+        updateContent();
+
+        // Sayfa kapatıldığında sesi durdur
+        window.addEventListener('beforeunload', stopSpeaking);
+    </script>
+</body>
+</html> 
